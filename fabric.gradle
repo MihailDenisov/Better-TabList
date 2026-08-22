@@ -100,6 +100,21 @@ processResources {
     exclude 'META-INF/neoforge.mods.toml'
 }
 
+tasks.register('validateFabricModMetadata') {
+    dependsOn processResources
+
+    doLast {
+        def modJson = file("$buildDir/resources/main/fabric.mod.json")
+        def minecraftVersionPredicate = new groovy.json.JsonSlurper().parse(modJson).depends.minecraft
+
+        if (!(minecraftVersionPredicate ==~ /(?:>=|>|<=|<|=)[^ ]+(?: (?:>=|>|<=|<|=)[^ ]+)?/)) {
+            throw new GradleException("fabric.mod.json has an invalid Minecraft version predicate: $minecraftVersionPredicate")
+        }
+    }
+}
+
+check.dependsOn validateFabricModMetadata
+
 jar {
     manifest {
         attributes([
