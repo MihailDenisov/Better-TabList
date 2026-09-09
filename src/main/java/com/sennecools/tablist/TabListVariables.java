@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class TabListVariables {
 
     private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("&#([0-9a-fA-F]{6})");
     private static final Pattern COLOR_CODE_PATTERN = Pattern.compile("&([0-9a-fA-Fk-oK-OrR])");
+    private static final Pattern HEALTH_DISPLAY_PATTERN = Pattern.compile("\\[\\d+\u2764]");
     private static final Pattern GRADIENT_MINIMESSAGE_PATTERN = Pattern.compile("<gradient:(#[0-9a-fA-F]{6}(?::#[0-9a-fA-F]{6})+)>(.*?)</gradient>");
     private static final Pattern GRADIENT_TAB_PATTERN = Pattern.compile("<(#[0-9a-fA-F]{6})>(.*?)</(#[0-9a-fA-F]{6})>");
     private static final Pattern HEX_CODE_IN_TEXT_PATTERN = Pattern.compile("&x(&[0-9a-fA-F]){6}");
@@ -119,10 +121,9 @@ public class TabListVariables {
     public static String resolveDisplayName(ServerPlayer player) {
         String displayName = buildDefaultDisplayName(player);
 
-        if (TabListConfig.afkEnabled
-                && TabListUpdater.INSTANCE != null
-                && TabListUpdater.INSTANCE.isPlayerAFK(player)) {
+        if (isPlayerAFK(player)) {
             displayName = "\u00A77" + displayName.replaceAll("\u00A7[0-9a-fA-Fk-oK-OrRxX]", "");
+            displayName = restoreStatusColors(displayName);
         }
 
         return displayName;
@@ -140,7 +141,7 @@ public class TabListVariables {
             String formatted = FTBRanksIntegration.getFormattedDisplayName(player);
 
             if (formatted != null) {
-                return convertColorCodes(formatted);
+                return convertColorCodes(applyPlayerStatusPlaceholders(formatted, player));
             }
         }
 
@@ -191,7 +192,52 @@ public class TabListVariables {
             }
         }
 
-        return convertColorCodes(result);
+        return convertColorCodes(applyPlayerStatusPlaceholders(result, player));
+    }
+
+    private static String applyPlayerStatusPlaceholders(String format, ServerPlayer player) {
+        return format
+                .replace("{dimension}", getDimensionSymbol(player))
+                .replace("{health}", getHealthSymbol(player))
+                .replace("#AFK", isPlayerAFK(player) ? "AFK" : "");
+    }
+
+    private static boolean isPlayerAFK(ServerPlayer player) {
+        return TabListConfig.afkEnabled
+                && TabListUpdater.INSTANCE != null
+                && TabListUpdater.INSTANCE.isPlayerAFK(player);
+    }
+
+    private static String getDimensionSymbol(ServerPlayer player) {
+        if (Level.OVERWORLD.equals(player.level().dimension())) {
+            return "&a\u24CC&r";
+        }
+        if (Level.NETHER.equals(player.level().dimension())) {
+            return "&c\u24C3&r";
+        }
+        if (Level.END.equals(player.level().dimension())) {
+            return "&d\u24BA&r";
+        }
+
+        return "&7" + player.level().dimension().location().getPath() + "&r";
+    }
+
+    private static String getHealthSymbol(ServerPlayer player) {
+        int health = Math.max(0, (int) Math.ceil(
+                player.getHealth() + player.getAbsorptionAmount()
+        ));
+        return "&c[" + health + "\u2764]&r";
+    }
+
+    private static String restoreStatusColors(String displayName) {
+        String colored = displayName
+                .replace("\u24CC", "\u00A7a\u24CC\u00A77")
+                .replace("\u24C3", "\u00A7c\u24C3\u00A77")
+                .replace("\u24BA", "\u00A7d\u24BA\u00A77");
+
+        return HEALTH_DISPLAY_PATTERN.matcher(colored).replaceAll(
+                match -> "\u00A7c" + match.group() + "\u00A77"
+        );
     }
 
     private static String getPlayerRank(ServerPlayer player) {

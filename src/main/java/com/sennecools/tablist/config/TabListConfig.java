@@ -10,6 +10,10 @@ import java.util.List;
 
 public class TabListConfig {
 
+    private static final String DEFAULT_DISPLAY_NAME_FORMAT =
+            "{dimension} {name} {health} &7#AFK";
+    private static final String LEGACY_DISPLAY_NAME_FORMAT = "{name} &7#AFK";
+
     // Runtime values
     public static String serverName;
     public static List<String> headerFrames;
@@ -45,8 +49,18 @@ public class TabListConfig {
                     "&fOnline: &e#PLAYERCOUNT&7/&e#MAXPLAYERS #N&7TPS: #CTPS &7| MSPT: &#55FFFF#MSPT #N&7Memory: &#AA55FF#MEMORY &7| Uptime: &#FFAA00#UPTIME",
                     "&fOnline: &e#PLAYERCOUNT&7/&e#MAXPLAYERS #N&7TPS: #CTPS &7| Ping: &#55FFFF#PING&7ms #N&7Memory: &#AA55FF#MEMORY &7| Uptime: &#FFAA00#UPTIME"
             ), "Text shown below the player list. Multiple entries create animation frames.");
-            needsSave |= setDefaultIfMissing(config, "appearance.display_name_format", "{name} &7#AFK",
-                    "Display name format. Supports {name}, {rank} placeholders + & color codes.");
+            needsSave |= setDefaultIfMissing(
+                    config,
+                    "appearance.display_name_format",
+                    DEFAULT_DISPLAY_NAME_FORMAT,
+                    "Display name format. Supports {name}, {rank}, {prefix}, {suffix}, "
+                            + "{primary_group}, {dimension}, and {health} placeholders + & color codes."
+            );
+            if (LEGACY_DISPLAY_NAME_FORMAT.equals(
+                    config.getOrElse("appearance.display_name_format", DEFAULT_DISPLAY_NAME_FORMAT))) {
+                config.set("appearance.display_name_format", DEFAULT_DISPLAY_NAME_FORMAT);
+                needsSave = true;
+            }
             needsSave |= setDefaultIfMissing(config, "appearance.update_interval", 500,
                     "How often (ms) the tab list refreshes. Range: 1-10000. Default: 500.");
             needsSave |= setDefaultIfMissing(config, "appearance.animation_interval", 4,
@@ -84,7 +98,10 @@ public class TabListConfig {
             footerFrames = List.copyOf(config.getOrElse("appearance.footer", List.of("")));
             updateInterval = clamp(config.getOrElse("appearance.update_interval", 500), 1, 10000);
             animationInterval = clamp(config.getOrElse("appearance.animation_interval", 4), 1, 200);
-            displayNameFormat = config.getOrElse("appearance.display_name_format", "{name} &7#AFK");
+            displayNameFormat = config.getOrElse(
+                    "appearance.display_name_format",
+                    DEFAULT_DISPLAY_NAME_FORMAT
+            );
             String providerValue = config.getOrElse("appearance.name_formatting_provider", "NONE");
             nameFormattingProvider = NameFormattingProvider.fromString(providerValue);
             if (providerValue == null
