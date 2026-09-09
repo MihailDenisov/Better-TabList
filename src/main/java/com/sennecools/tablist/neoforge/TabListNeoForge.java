@@ -1,10 +1,10 @@
-//? if neoforge {
-/*package com.sennecools.tablist.neoforge;
+package com.sennecools.tablist.neoforge;
 
 import com.sennecools.tablist.Constants;
 import com.sennecools.tablist.TabListUpdater;
 import com.sennecools.tablist.TabListVariables;
 import com.sennecools.tablist.config.TabListConfig;
+import com.sennecools.tablist.platform.Services;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -22,6 +22,29 @@ public class TabListNeoForge {
 
     public TabListNeoForge() {
         TabListConfig.load();
+
+        switch (TabListConfig.nameFormattingProvider) {
+            case NONE -> Constants.LOGGER.info(
+                    "Name formatting provider: NONE"
+            );
+
+            case FTB -> Constants.LOGGER.info(
+                    "Name formatting provider: FTB"
+            );
+
+            case LP -> {
+                if (Services.PLATFORM.isModLoaded("luckperms")) {
+                    Constants.LOGGER.info(
+                            "Name formatting provider: LP (LuckPerms detected)"
+                    );
+                } else {
+                    Constants.LOGGER.warn(
+                            "Name formatting provider is LP, but LuckPerms is not loaded. Falling back to unformatted names."
+                    );
+                }
+            }
+        }
+
         updater = new TabListUpdater();
         NeoForge.EVENT_BUS.register(this);
     }
@@ -56,4 +79,3 @@ public class TabListNeoForge {
         event.getDispatcher().register(updater.buildReloadCommand());
     }
 }
-*///?}

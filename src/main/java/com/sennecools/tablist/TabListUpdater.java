@@ -14,6 +14,7 @@ import net.minecraft.world.scores.Scoreboard;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -186,10 +187,17 @@ public class TabListUpdater {
         List<ServerPlayer> players = new ArrayList<>(server.getPlayerList().getPlayers());
 
         Comparator<ServerPlayer> comparator;
+        Map<UUID, Integer> rankPowers = new HashMap<>();
+        if ("RANK".equals(mode)) {
+            for (ServerPlayer player : players) {
+                rankPowers.put(player.getUUID(), TabListVariables.getPlayerRankPower(player));
+            }
+        }
+
         //? if >=1.21.9 {
         /*if ("RANK".equals(mode)) {
             comparator = Comparator
-                    .comparingInt((ServerPlayer p) -> TabListVariables.getPlayerRankPower(p))
+                    .comparingInt((ServerPlayer p) -> rankPowers.get(p.getUUID()))
                     .reversed()
                     .thenComparing(p -> p.getGameProfile().name(), String.CASE_INSENSITIVE_ORDER);
         } else {
@@ -199,7 +207,7 @@ public class TabListUpdater {
         //?} else {
         if ("RANK".equals(mode)) {
             comparator = Comparator
-                    .comparingInt((ServerPlayer p) -> TabListVariables.getPlayerRankPower(p))
+                    .comparingInt((ServerPlayer p) -> rankPowers.get(p.getUUID()))
                     .reversed()
                     .thenComparing(p -> p.getGameProfile().getName(), String.CASE_INSENSITIVE_ORDER);
         } else {

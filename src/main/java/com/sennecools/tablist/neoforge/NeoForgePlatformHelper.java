@@ -1,5 +1,4 @@
-//? if neoforge {
-/*package com.sennecools.tablist.neoforge;
+package com.sennecools.tablist.neoforge;
 
 import com.sennecools.tablist.platform.PlatformHelper;
 import net.minecraft.server.level.ServerPlayer;
@@ -25,4 +24,3 @@ public class NeoForgePlatformHelper implements PlatformHelper {
         player.refreshTabListName();
     }
 }
-*///?}

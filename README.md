@@ -1,6 +1,6 @@
 # Better TabList
 
-A server-side Minecraft mod that fully customizes the in-game tab list with animated headers/footers, AFK detection, player sorting, and FTB Ranks integration.
+A server-side Minecraft mod that fully customizes the in-game tab list with animated headers/footers, AFK detection, player sorting, and FTB Ranks or LuckPerms integration.
 
 Supports **NeoForge**, **Fabric**, and **Forge** for Minecraft 1.21–1.21.1.
 
@@ -8,8 +8,9 @@ Supports **NeoForge**, **Fabric**, and **Forge** for Minecraft 1.21–1.21.1.
 
 - **Animated Header & Footer** — Multiple frames that cycle automatically, with configurable speed
 - **AFK Detection** — Greyed-out names and an `#AFK` placeholder after a configurable timeout
-- **Player Sorting** — Alphabetical or rank-based (via FTB Ranks) tab list ordering
+- **Player Sorting** — Alphabetical or rank-based (via FTB Ranks power or LuckPerms group weight) tab list ordering
 - **FTB Ranks Integration** — Optional; uses rank permissions for display names and sorting
+- **LuckPerms Integration** — Optional; supports prefixes, suffixes, primary groups, and weighted sorting
 - **Hex Color Support** — Full `&#RRGGBB` hex colors alongside standard `&` color codes
 - **Efficient Updates** — Only sends packets when content actually changes
 
@@ -37,7 +38,7 @@ All settings live in `config/tablist.toml`.
 | `#MAXPLAYERS`  | Maximum player slots                               |
 | `#PLAYERNAME`  | Viewing player's name                              |
 | `#PING`        | Player ping in ms                                  |
-| `#RANK`        | Player rank (requires FTB Ranks)                   |
+| `#RANK`        | Player rank or primary LuckPerms group             |
 | `#AFK`         | Shows "AFK" if the player is AFK, empty otherwise  |
 | `#WORLD`       | Player's current dimension                         |
 | `#MEMORY`      | Memory usage (used / max)                          |
@@ -52,10 +53,11 @@ All settings live in `config/tablist.toml`.
 
 ### Display Name Format
 
-The `display_name_format` option controls how player names appear in the tab list. Use `{name}` and `{rank}` as placeholders:
+The `display_name_format` option controls how player names appear in the tab list. It supports `{name}`, `{rank}`, `{prefix}`, `{suffix}`, and `{primary_group}`. Set `name_formatting_provider` to `NONE`, `FTB`, or `LP`:
 
 ```
 display_name_format = "{name} &7#AFK"
+name_formatting_provider = "NONE"
 ```
 
 ### Example Config
@@ -76,9 +78,6 @@ animation_interval = 4
 
 [sorting]
 sort_mode = "NONE"
-
-[ftbranks]
-enable_ftbranks_formatting = true
 
 [afk]
 afk_enabled = true

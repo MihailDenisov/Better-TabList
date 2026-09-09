@@ -1,6 +1,7 @@
 package com.sennecools.tablist;
 
 import com.sennecools.tablist.config.TabListConfig;
+import com.sennecools.tablist.config.NameFormattingProvider;
 import com.sennecools.tablist.platform.Services;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -128,42 +129,105 @@ public class TabListVariables {
     }
 
     private static String buildDefaultDisplayName(ServerPlayer player) {
-        if (TabListConfig.enableFTBRanksFormatting && isFTBRanksLoaded()) {
+        NameFormattingProvider provider = TabListConfig.nameFormattingProvider;
+
+        if (provider == null) {
+            provider = NameFormattingProvider.NONE;
+        }
+
+        // FTB Ranks formatting
+        if (provider == NameFormattingProvider.FTB && isFTBRanksLoaded()) {
             String formatted = FTBRanksIntegration.getFormattedDisplayName(player);
+
             if (formatted != null) {
                 return convertColorCodes(formatted);
             }
         }
 
         String format = TabListConfig.displayNameFormat;
+
         if (format == null) {
             format = "{name}";
         }
-        //? if >=1.21.9 {
-        /*String result = format.replace("{name}", player.getGameProfile().name());*/
-        //?} else {
-        String result = format.replace("{name}", player.getGameProfile().getName());
-        //?}
-        result = result.replace("{rank}", getPlayerRank(player));
+
+        String result = format.replace(
+                "{name}",
+                player.getGameProfile().getName()
+        );
+
+        switch (provider) {
+            case FTB -> {
+                result = result.replace(
+                        "{rank}",
+                        getPlayerRank(player)
+                );
+
+                result = result.replace("{prefix}", "");
+                result = result.replace("{suffix}", "");
+                result = result.replace("{primary_group}", "");
+            }
+
+            case LP -> {
+                if (isLuckPermsLoaded()) {
+                    LuckPermsIntegration.PlayerMetaData metaData =
+                            LuckPermsIntegration.getPlayerMetaData(player);
+                    result = result.replace("{prefix}", metaData.prefix());
+                    result = result.replace("{suffix}", metaData.suffix());
+                    result = result.replace("{primary_group}", metaData.primaryGroup());
+                    result = result.replace("{rank}", metaData.primaryGroup());
+                } else {
+                    result = result.replace("{prefix}", "");
+                    result = result.replace("{suffix}", "");
+                    result = result.replace("{primary_group}", "");
+                    result = result.replace("{rank}", "");
+                }
+            }
+
+            case NONE -> {
+                result = result.replace("{prefix}", "");
+                result = result.replace("{suffix}", "");
+                result = result.replace("{primary_group}", "");
+                result = result.replace("{rank}", "");
+            }
+        }
+
         return convertColorCodes(result);
     }
 
     private static String getPlayerRank(ServerPlayer player) {
-        if (isFTBRanksLoaded()) {
+        NameFormattingProvider provider = TabListConfig.nameFormattingProvider;
+
+        if (provider == NameFormattingProvider.FTB && isFTBRanksLoaded()) {
             return FTBRanksIntegration.getPlayerRankName(player);
         }
+
+        if (provider == NameFormattingProvider.LP && isLuckPermsLoaded()) {
+            return LuckPermsIntegration.getPlayerMetaData(player).primaryGroup();
+        }
+
         return "";
     }
 
     static int getPlayerRankPower(ServerPlayer player) {
-        if (isFTBRanksLoaded()) {
+        if (TabListConfig.nameFormattingProvider == NameFormattingProvider.FTB
+                && isFTBRanksLoaded()) {
             return FTBRanksIntegration.getPlayerRankPower(player);
         }
+
+        if (TabListConfig.nameFormattingProvider == NameFormattingProvider.LP
+                && isLuckPermsLoaded()) {
+            return LuckPermsIntegration.getGroupWeight(player);
+        }
+
         return 0;
     }
 
     private static boolean isFTBRanksLoaded() {
         return Services.PLATFORM.isModLoaded("ftbranks");
+    }
+
+    private static boolean isLuckPermsLoaded() {
+        return Services.PLATFORM.isModLoaded("luckperms");
     }
 
     private static double getMSPT(MinecraftServer server) {

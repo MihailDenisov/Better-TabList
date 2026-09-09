@@ -17,7 +17,7 @@ public class TabListConfig {
     public static int updateInterval;
     public static int animationInterval;
     public static String displayNameFormat;
-    public static boolean enableFTBRanksFormatting;
+    public static NameFormattingProvider nameFormattingProvider;
     public static String sortMode;
     public static boolean afkEnabled;
     public static int afkTimeout;
@@ -56,9 +56,17 @@ public class TabListConfig {
             needsSave |= setDefaultIfMissing(config, "sorting.sort_mode", "NONE",
                     "How to sort players: NONE, ALPHABETICAL, or RANK.");
 
-            // ── FTB Ranks ──
-            needsSave |= setDefaultIfMissing(config, "ftbranks.enable_ftbranks_formatting", true,
-                    "When true and FTB Ranks is loaded, uses ftbranks.name_format permission.");
+            // ── Name formatting integration ──
+            String defaultFormattingProvider = config.contains("ftbranks.enable_ftbranks_formatting")
+                    && config.getOrElse("ftbranks.enable_ftbranks_formatting", true)
+                    ? "FTB"
+                    : "NONE";
+            needsSave |= setDefaultIfMissing(
+                    config,
+                    "appearance.name_formatting_provider",
+                    defaultFormattingProvider,
+                    "Name formatting provider: NONE, FTB, or LP."
+            );
 
             // ── AFK ──
             needsSave |= setDefaultIfMissing(config, "afk.afk_enabled", true,
@@ -77,7 +85,15 @@ public class TabListConfig {
             updateInterval = clamp(config.getOrElse("appearance.update_interval", 500), 1, 10000);
             animationInterval = clamp(config.getOrElse("appearance.animation_interval", 4), 1, 200);
             displayNameFormat = config.getOrElse("appearance.display_name_format", "{name} &7#AFK");
-            enableFTBRanksFormatting = config.getOrElse("ftbranks.enable_ftbranks_formatting", true);
+            String providerValue = config.getOrElse("appearance.name_formatting_provider", "NONE");
+            nameFormattingProvider = NameFormattingProvider.fromString(providerValue);
+            if (providerValue == null
+                    || !providerValue.trim().equalsIgnoreCase(nameFormattingProvider.name())) {
+                Constants.LOGGER.warn(
+                        "Unknown name_formatting_provider '{}'. Falling back to NONE.",
+                        providerValue
+                );
+            }
             sortMode = config.getOrElse("sorting.sort_mode", "NONE");
             afkEnabled = config.getOrElse("afk.afk_enabled", true);
             afkTimeout = clamp(config.getOrElse("afk.afk_timeout", 300), 10, 3600);

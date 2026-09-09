@@ -22,18 +22,41 @@ java {
 
 repositories {
     mavenCentral()
+
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Architectury'
+                url = 'https://maven.architectury.dev/'
+            }
+        }
+
+        filter {
+            includeGroup 'dev.architectury'
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'CurseMaven'
+                url = 'https://cursemaven.com/'
+            }
+        }
+
+        filter {
+            includeGroup 'curse.maven'
+        }
+    }
     maven {
         name = 'ParchmentMC'
         url = 'https://maven.parchmentmc.org/'
+
+        content {
+            includeGroup 'org.parchmentmc.data'
+        }
     }
-    maven {
-        name = 'CurseMaven'
-        url = 'https://cursemaven.com'
-    }
-    maven {
-        name = 'Architectury'
-        url = 'https://maven.architectury.dev/'
-    }
+
     maven {
         name = 'LuckPerms'
         url = 'https://repo.lucko.me/'
@@ -76,6 +99,14 @@ dependencies {
     compileOnly "curse.maven:ftb-library-forge-404465:6711324"
     compileOnly "curse.maven:ftb-ranks-forge-314905:6431744"
     compileOnly "net.luckperms:api:5.4"
+}
+
+sourceSets {
+    main {
+        java {
+            exclude 'com/sennecools/tablist/fabric/**'
+        }
+    }
 }
 
 sourceSets.main.resources.srcDir rootProject.file('src/main/resources-neoforge')
