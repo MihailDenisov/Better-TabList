@@ -35,6 +35,10 @@ repositories {
         url = 'https://maven.architectury.dev/'
     }
     maven {
+        name = 'LuckPerms'
+        url = 'https://repo.lucko.me/'
+    }
+    maven {
         name = 'FTB'
         url = 'https://maven.saps.dev/releases/'
     }
@@ -71,6 +75,7 @@ dependencies {
     compileOnly "dev.architectury:architectury-neoforge:${architectury_api_version}"
     compileOnly "curse.maven:ftb-library-forge-404465:6711324"
     compileOnly "curse.maven:ftb-ranks-forge-314905:6431744"
+    compileOnly "net.luckperms:api:5.4"
 }
 
 sourceSets.main.resources.srcDir rootProject.file('src/main/resources-neoforge')
