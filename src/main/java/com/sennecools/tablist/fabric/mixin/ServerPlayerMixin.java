@@ -2,6 +2,7 @@
 package com.sennecools.tablist.fabric.mixin;
 
 import com.sennecools.tablist.TabListVariables;
+import com.sennecools.tablist.TextFormatter;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,7 +17,7 @@ public abstract class ServerPlayerMixin {
     private void tablist$getTabListDisplayName(CallbackInfoReturnable<Component> cir) {
         ServerPlayer self = (ServerPlayer) (Object) this;
         String displayName = TabListVariables.resolveDisplayName(self);
-        cir.setReturnValue(TabListVariables.parseColoredText(displayName));
+        cir.setReturnValue(TextFormatter.parseColoredText(displayName));
     }
 }
 //?}

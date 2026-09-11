@@ -1,6 +1,6 @@
 # Better TabList
 
-A server-side Minecraft mod that fully customizes the in-game tab list with animated headers/footers, AFK detection, player sorting, and FTB Ranks or LuckPerms integration.
+A server-side Minecraft mod that customizes the in-game tab list and chat with animated headers/footers, AFK detection, player sorting, and optional FTB Ranks, LuckPerms, and spark integrations.
 
 Supports **NeoForge**, **Fabric**, and **Forge** for Minecraft 1.21–1.21.1.
 
@@ -11,6 +11,8 @@ Supports **NeoForge**, **Fabric**, and **Forge** for Minecraft 1.21–1.21.1.
 - **Player Sorting** — Alphabetical or rank-based (via FTB Ranks power or LuckPerms group weight) tab list ordering
 - **FTB Ranks Integration** — Optional; uses rank permissions for display names and sorting
 - **LuckPerms Integration** — Optional; supports prefixes, suffixes, primary groups, and weighted sorting
+- **spark Integration** — Optional rolling TPS, MSPT percentile, and process CPU metrics
+- **Chat Formatting** — Reuses the tab-list player and server placeholders
 - **Player Status** — Shows each player's dimension and health directly in their tab-list entry
 - **Hex Color Support** — Full `&#RRGGBB` hex colors alongside standard `&` color codes
 - **Efficient Updates** — Only sends packets when content actually changes
@@ -35,6 +37,15 @@ All settings live in `config/tablist.toml`.
 | `#TPS`         | Ticks per second                                   |
 | `#CTPS`        | TPS with automatic color (green/yellow/red)        |
 | `#MSPT`        | Milliseconds per tick                              |
+| `#TPS_1M`      | TPS over one minute (`#TPS1M` also accepted)       |
+| `#TPS_5M`      | TPS over five minutes (`#TPS5M` also accepted)     |
+| `#MSPT_P95`    | 95th-percentile MSPT (`#MSPT95P` also accepted)    |
+| `#CPU`         | Server process CPU usage percentage                |
+| `#CTPS_1M`     | Colored one-minute TPS                             |
+| `#CTPS_5M`     | Colored five-minute TPS                            |
+| `#CMSPT`       | Colored MSPT                                       |
+| `#CMSPT_P95`   | Colored 95th-percentile MSPT                       |
+| `#CCPU`        | Colored process CPU percentage                     |
 | `#PLAYERCOUNT` | Number of online players                           |
 | `#MAXPLAYERS`  | Maximum player slots                               |
 | `#PLAYERNAME`  | Viewing player's name                              |
@@ -65,6 +76,9 @@ The `display_name_format` option controls how player names appear in the tab lis
 | `{primary_group}` | LuckPerms primary group |
 | `{dimension}`     | `§aⓌ§r` Overworld, `§cⓃ§r` Nether, or `§dⒺ§r` End |
 | `{health}`        | Current health plus absorption, displayed in red (for example, `[20❤]`) |
+| `{world}`         | Current dimension path |
+| `{ping}`          | Player latency in milliseconds |
+| `{gamemode}`      | Current game mode |
 
 ```
 display_name_format = "{dimension} {name} {health} &7#AFK"
@@ -93,6 +107,22 @@ sort_mode = "NONE"
 [afk]
 afk_enabled = true
 afk_timeout = 300
+
+[performance]
+metrics_provider = "SPARK" # VANILLA or SPARK; automatically falls back to VANILLA
+
+[performance.colors]
+tps_good = 18.0
+tps_warning = 15.0
+mspt_good = 40.0
+mspt_warning = 50.0
+cpu_good = 60.0
+cpu_warning = 85.0
+
+[chat]
+enabled = true
+format = "#TIME | {prefix}{name}{suffix}&7: &f{message}"
+allow_player_colors = false
 ```
 
 ## Building from Source

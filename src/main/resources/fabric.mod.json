@@ -25,6 +25,7 @@
     "minecraft": "${minecraft_version_range}"
   },
   "suggests": {
-    "ftbranks": "*"
+    "ftbranks": "*",
+    "spark": "*"
   }
 }

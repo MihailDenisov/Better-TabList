@@ -151,8 +151,8 @@ public class TabListUpdater {
         if (!combined.equals(previous)) {
             ClientboundTabListPacket packet =
                 new ClientboundTabListPacket(
-                    TabListVariables.parseColoredText(header),
-                    TabListVariables.parseColoredText(footer)
+                    TextFormatter.parseColoredText(header),
+                    TextFormatter.parseColoredText(footer)
                 );
             player.connection.send(packet);
         }

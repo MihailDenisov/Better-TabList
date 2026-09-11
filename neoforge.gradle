@@ -60,6 +60,11 @@ repositories {
     maven {
         name = 'LuckPerms'
         url = 'https://repo.lucko.me/'
+
+        content {
+            includeGroup 'net.luckperms'
+            includeModule 'me.lucko', 'spark-api'
+        }
     }
     maven {
         name = 'FTB'
@@ -99,6 +104,10 @@ dependencies {
     compileOnly "curse.maven:ftb-library-forge-404465:6711324"
     compileOnly "curse.maven:ftb-ranks-forge-314905:6431744"
     compileOnly "net.luckperms:api:5.4"
+    compileOnly "me.lucko:spark-api:${spark_api_version}"
+    testImplementation platform("org.junit:junit-bom:5.11.4")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 sourceSets {
@@ -106,6 +115,10 @@ sourceSets {
         java {
             exclude 'com/sennecools/tablist/fabric/**'
         }
+    }
+    test {
+        compileClasspath += sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.runtimeClasspath
     }
 }
 
@@ -155,6 +168,10 @@ jar {
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }
 
 publishMods {

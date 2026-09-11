@@ -2,6 +2,9 @@ modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
 
+[[mixins]]
+config="tablist.neoforge.mixins.json"
+
 [[mods]]
 modId="${mod_id}"
 version="${version}"
@@ -30,3 +33,11 @@ description='''${mod_description}'''
     versionRange="[1.0,)"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="spark"
+    type="optional"
+    reason="Provides rolling TPS, MSPT, and CPU placeholders"
+    versionRange="[1.10,)"
+    ordering="AFTER"
+    side="SERVER"

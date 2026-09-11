@@ -25,6 +25,16 @@ public class TabListConfig {
     public static String sortMode;
     public static boolean afkEnabled;
     public static int afkTimeout;
+    public static MetricsProvider metricsProvider;
+    public static double tpsGoodThreshold;
+    public static double tpsWarningThreshold;
+    public static double msptGoodThreshold;
+    public static double msptWarningThreshold;
+    public static double cpuGoodThreshold;
+    public static double cpuWarningThreshold;
+    public static boolean chatEnabled;
+    public static String chatFormat;
+    public static boolean allowPlayerColors;
 
     public static void load() {
         Path configPath = Services.PLATFORM.getConfigDir().resolve("tablist.toml");
@@ -54,7 +64,8 @@ public class TabListConfig {
                     "appearance.display_name_format",
                     DEFAULT_DISPLAY_NAME_FORMAT,
                     "Display name format. Supports {name}, {rank}, {prefix}, {suffix}, "
-                            + "{primary_group}, {dimension}, and {health} placeholders + & color codes."
+                            + "{primary_group}, {dimension}, {health}, {world}, {ping}, and {gamemode} "
+                            + "placeholders + & color codes."
             );
             if (LEGACY_DISPLAY_NAME_FORMAT.equals(
                     config.getOrElse("appearance.display_name_format", DEFAULT_DISPLAY_NAME_FORMAT))) {
@@ -88,6 +99,31 @@ public class TabListConfig {
             needsSave |= setDefaultIfMissing(config, "afk.afk_timeout", 300,
                     "Seconds of inactivity before AFK. Range: 10-3600. Default: 300.");
 
+            // ── Performance metrics ──
+            needsSave |= setDefaultIfMissing(config, "performance.metrics_provider", "VANILLA",
+                    "Metrics provider: VANILLA or SPARK. SPARK falls back to VANILLA when unavailable.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.tps_good", 18.0,
+                    "TPS values at or above this threshold are green.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.tps_warning", 15.0,
+                    "TPS values at or above this threshold are yellow; lower values are red.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.mspt_good", 40.0,
+                    "MSPT values at or below this threshold are green.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.mspt_warning", 50.0,
+                    "MSPT values at or below this threshold are yellow; higher values are red.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.cpu_good", 60.0,
+                    "CPU percentages at or below this threshold are green.");
+            needsSave |= setDefaultIfMissing(config, "performance.colors.cpu_warning", 85.0,
+                    "CPU percentages at or below this threshold are yellow; higher values are red.");
+
+            // ── Chat formatting ──
+            needsSave |= setDefaultIfMissing(config, "chat.enabled", true,
+                    "Enable server chat formatting.");
+            needsSave |= setDefaultIfMissing(config, "chat.format",
+                    "{prefix}{name}{suffix}&7: &f{message}",
+                    "Chat format. Supports player/server placeholders plus {message} and {raw_message}.");
+            needsSave |= setDefaultIfMissing(config, "chat.allow_player_colors", false,
+                    "Allow players to use legacy and hex color codes in their messages.");
+
             if (needsSave) {
                 config.save();
             }
@@ -114,6 +150,27 @@ public class TabListConfig {
             sortMode = config.getOrElse("sorting.sort_mode", "NONE");
             afkEnabled = config.getOrElse("afk.afk_enabled", true);
             afkTimeout = clamp(config.getOrElse("afk.afk_timeout", 300), 10, 3600);
+            String metricsProviderValue = config.getOrElse("performance.metrics_provider", "VANILLA");
+            metricsProvider = MetricsProvider.fromString(metricsProviderValue);
+            if (metricsProviderValue == null
+                    || !metricsProviderValue.trim().equalsIgnoreCase(metricsProvider.name())) {
+                Constants.LOGGER.warn(
+                        "Unknown metrics_provider '{}'. Falling back to VANILLA.",
+                        metricsProviderValue
+                );
+            }
+            tpsGoodThreshold = config.getOrElse("performance.colors.tps_good", 18.0);
+            tpsWarningThreshold = config.getOrElse("performance.colors.tps_warning", 15.0);
+            msptGoodThreshold = config.getOrElse("performance.colors.mspt_good", 40.0);
+            msptWarningThreshold = config.getOrElse("performance.colors.mspt_warning", 50.0);
+            cpuGoodThreshold = config.getOrElse("performance.colors.cpu_good", 60.0);
+            cpuWarningThreshold = config.getOrElse("performance.colors.cpu_warning", 85.0);
+            chatEnabled = config.getOrElse("chat.enabled", true);
+            chatFormat = config.getOrElse(
+                    "chat.format",
+                    "{prefix}{name}{suffix}&7: &f{message}"
+            );
+            allowPlayerColors = config.getOrElse("chat.allow_player_colors", false);
 
             Constants.LOGGER.info("TabList config loaded. Update interval: {} ms", updateInterval);
         }

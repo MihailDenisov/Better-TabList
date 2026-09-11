@@ -3,6 +3,8 @@ package com.sennecools.tablist.neoforge;
 import com.sennecools.tablist.Constants;
 import com.sennecools.tablist.TabListUpdater;
 import com.sennecools.tablist.TabListVariables;
+import com.sennecools.tablist.TextFormatter;
+import com.sennecools.tablist.chat.ChatFormatter;
 import com.sennecools.tablist.config.TabListConfig;
 import com.sennecools.tablist.platform.Services;
 import net.minecraft.network.chat.Component;
@@ -57,13 +59,16 @@ public class TabListNeoForge {
     @SubscribeEvent
     public void onServerChat(ServerChatEvent event) {
         updater.onPlayerChat(event.getPlayer());
+        if (TabListConfig.chatEnabled) {
+            event.setMessage(ChatFormatter.format(event.getPlayer(), event.getRawText()));
+        }
     }
 
     @SubscribeEvent
     public void onTabListNameFormat(PlayerEvent.TabListNameFormat event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             String displayName = TabListVariables.resolveDisplayName(player);
-            event.setDisplayName(TabListVariables.parseColoredText(displayName));
+            event.setDisplayName(TextFormatter.parseColoredText(displayName));
         }
     }
 
